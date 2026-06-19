@@ -1,0 +1,964 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>Patient Portal — Limerick Physio Rooms</title>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600;9..40,700&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body { height: 100%; }
+    body { font-family: 'DM Sans', system-ui, sans-serif; background: #122840; -webkit-font-smoothing: antialiased; }
+    input, button { font-family: inherit; }
+
+    @keyframes fadeIn  { from { opacity: 0; transform: translateY(6px);  } to { opacity: 1; transform: translateY(0); } }
+    @keyframes slideUp { from { opacity: 0; transform: translateY(18px); } to { opacity: 1; transform: translateY(0); } }
+    @keyframes dropIn  { from { opacity: 0; transform: translateY(-6px); } to { opacity: 1; transform: translateY(0); } }
+
+    .form-input { transition: border-color .15s, box-shadow .15s; }
+    .form-input:focus { border-color: #1AAFC0 !important; box-shadow: 0 0 0 3px rgba(26,175,192,.1) !important; outline: none; }
+
+    .btn-sign-in:hover  { background: #1598A8 !important; }
+    .btn-sign-in:active { background: #117F8F !important; }
+
+    .exercise-card { transition: transform .12s ease, box-shadow .12s ease; }
+    .exercise-card:hover { transform: translateY(-1px); box-shadow: 0 4px 16px rgba(12,45,72,.11), 0 1px 4px rgba(12,45,72,.06) !important; }
+
+    .back-btn:hover  { color: #0C2D48 !important; }
+    .play-btn:hover  { border-color: rgba(255,255,255,.6) !important; background: rgba(255,255,255,.07) !important; }
+
+    .menu-sign-out:hover  { background: #FEF2F2 !important; }
+    .nav-inactive:hover   { color: #6B8090 !important; }
+
+    .check-easy:hover { background: #DDEEE3 !important; }
+    .check-jr:hover   { background: #D8EFF5 !important; }
+    .check-hard:hover { background: #FDE8DF !important; }
+
+    .request-slot-btn:hover { background: #1598A8 !important; }
+
+    ::-webkit-scrollbar { width: 0; }
+
+    /* Recolour dark-navy logo to brand teal #1AAFC0 */
+    .logo-img {
+      filter: brightness(0) saturate(100%) invert(57%) sepia(68%) saturate(478%) hue-rotate(148deg) brightness(100%);
+    }
+
+    /* ── DESKTOP SIDEBAR ──────────────────────────────────────────── */
+    .desktop-sidebar { display: none; }
+
+    .sidebar-logo-area {
+      padding: 24px 20px 20px;
+      border-bottom: 1px solid #F0F5F8;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .sidebar-brand-name {
+      font-size: 11.5px;
+      font-weight: 700;
+      color: #0C2D48;
+      letter-spacing: .8px;
+      text-transform: uppercase;
+      line-height: 1.35;
+    }
+    .sidebar-brand-sub {
+      font-size: 10.5px;
+      color: #1AAFC0;
+      font-weight: 600;
+      margin-top: 2px;
+    }
+    .sidebar-nav { flex: 1; padding: 10px 0; overflow-y: auto; }
+    .sidebar-item {
+      display: flex;
+      align-items: center;
+      gap: 11px;
+      padding: 11px 20px;
+      font-size: 14px;
+      font-weight: 500;
+      color: #7A8C98;
+      cursor: pointer;
+      border-left: 3px solid transparent;
+      transition: background .1s, color .1s;
+    }
+    .sidebar-item:hover { background: #F5F8FA; color: #0C2D48; }
+    .sidebar-item.active { color: #1AAFC0; font-weight: 700; border-left-color: #1AAFC0; background: #F0FAFB; }
+    .sidebar-item.active svg * { stroke: #1AAFC0; }
+    .sidebar-notif-dot {
+      margin-left: auto;
+      width: 18px; height: 18px;
+      background: #1AAFC0;
+      border-radius: 50%;
+      font-size: 9px;
+      font-weight: 700;
+      color: #fff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .sidebar-user-area {
+      padding: 14px 20px;
+      border-top: 1px solid #F0F5F8;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .sidebar-signout-btn {
+      background: none;
+      border: none;
+      cursor: pointer;
+      color: #C0392B;
+      padding: 4px;
+      display: flex;
+      align-items: center;
+      opacity: .7;
+      transition: opacity .15s;
+    }
+    .sidebar-signout-btn:hover { opacity: 1; }
+
+    /* ── RESPONSIVE ───────────────────────────────────────────────── */
+    @media (min-width: 768px) {
+      body { background: #F0F4F7; }
+
+      /* Login — wider, better centred */
+      .login-card { max-width: 440px !important; }
+
+      /* App shell — horizontal */
+      .app-shell {
+        max-width: 100% !important;
+        flex-direction: row !important;
+        height: 100vh;
+        background: #F5F8FA !important;
+      }
+
+      /* Show sidebar */
+      .desktop-sidebar {
+        display: flex !important;
+        flex-direction: column;
+        width: 248px;
+        flex-shrink: 0;
+        background: #fff;
+        border-right: 1px solid #E8EEF2;
+        height: 100vh;
+        position: sticky;
+        top: 0;
+      }
+
+      /* Main panel fills rest */
+      .main-panel {
+        flex: 1;
+        min-width: 0;
+        display: flex;
+        flex-direction: column;
+        height: 100vh;
+      }
+
+      /* Hide mobile bottom nav and header logo on desktop */
+      .bottom-nav { display: none !important; }
+      .header-logo-group { display: none !important; }
+
+      /* Show desktop page title and push avatar to the right */
+      .header-desktop-title { display: flex !important; flex: 1; align-items: center; min-width: 0; }
+
+      /* Hide sidebar user area — user info lives in header dropdown on desktop */
+      .sidebar-user-area { display: none !important; }
+
+      /* Content gets comfortable max-width */
+      .content-wrap { max-width: 820px; }
+
+      /* Exercise detail video — cap width */
+      .detail-video { max-height: 360px; }
+    }
+
+    @media (max-width: 767px) {
+      .app-shell { max-width: 600px !important; margin: 0 auto !important; }
+    }
+  </style>
+</head>
+<body>
+<div id="app"></div>
+<script>
+const LOGO = 'HIPAA_Compliant_Logo.png';
+
+const EXERCISES = [
+  {
+    id: 1, name: 'Seated Knee Extension', category: 'Lower Limb',
+    sets: 3, reps: '15 reps', frequency: 'Daily', assignedDate: '12 Jun',
+    instructions: [
+      'Sit upright in a firm chair with feet flat on the floor, back straight and not touching the chair back.',
+      'Slowly straighten your right knee, lifting your foot until parallel to the floor.',
+      'Hold for 2 seconds at the top, actively squeezing your quadricep.',
+      'Slowly lower your foot back down over 3 seconds — control the descent.',
+      'Complete all reps on the right side, then switch to the left.',
+      'Rest 60 seconds between sets.',
+    ],
+    notes: 'Controlled movement in both directions is the goal — do not swing the leg. Mild muscle ache is normal. If you feel sharp or shooting pain at any point, stop and contact the clinic.',
+  },
+  {
+    id: 2, name: 'Hip Flexor Stretch', category: 'Hip & Pelvis',
+    sets: 2, reps: '30 sec hold', frequency: 'Twice daily', assignedDate: '12 Jun',
+    instructions: [
+      'Start in a half-kneeling position — right knee on the floor, left foot flat in front of you.',
+      'Keep your torso upright with your core gently engaged.',
+      'Slowly shift your weight forward over your front foot until you feel a stretch in the front of your right hip.',
+      'Keep your lower back straight — do not let it arch.',
+      'Hold for a full 30 seconds, breathing steadily throughout.',
+      'Release slowly and repeat on the other side.',
+    ],
+    notes: 'A gentle pulling sensation in the front of the hip is expected. Any sharp pain in the groin or hip joint is not normal — stop and contact the clinic if this occurs.',
+  },
+  {
+    id: 3, name: 'Single Leg Calf Raise', category: 'Lower Limb',
+    sets: 3, reps: '12 reps each', frequency: 'Daily', assignedDate: '10 Jun',
+    instructions: [
+      'Stand near a wall or counter for balance — rest fingertips lightly, do not lean.',
+      'Lift one foot slightly off the floor, balancing entirely on the standing leg.',
+      'Slowly rise onto the ball of your foot, lifting the heel as high as comfortable.',
+      'Hold at the top for 1 second.',
+      'Slowly lower your heel over 3 seconds — do not drop down quickly.',
+      'Complete all reps on one side, then switch legs.',
+    ],
+    notes: 'If single-leg is too difficult initially, start with both feet together and progress to single-leg as strength improves. Let the clinic know if calf tightness persists after exercise.',
+  },
+  {
+    id: 4, name: 'Cervical Rotation', category: 'Neck & Spine',
+    sets: 2, reps: '10 reps each side', frequency: 'Morning & evening', assignedDate: '10 Jun',
+    instructions: [
+      'Sit tall in a chair with feet flat on the floor and shoulders relaxed down.',
+      'Look straight ahead with your chin level — avoid tilting your head.',
+      'Slowly turn your head to the right as far as comfortable, aiming to bring your chin over your shoulder.',
+      'Hold at end range for 1–2 seconds.',
+      'Return slowly to centre, then repeat to the left. That is one rep.',
+      'Move smoothly throughout — avoid jerky or forced movements.',
+    ],
+    notes: 'Gentle tightness in the neck is expected. If you experience dizziness, headache, or tingling down into your arm, stop immediately and contact the clinic.',
+  },
+  {
+    id: 5, name: 'Shoulder Pendulum', category: 'Upper Limb',
+    sets: 1, reps: '2 minutes', frequency: 'Three times daily', assignedDate: '8 Jun',
+    instructions: [
+      'Stand beside a table or bed and bend forward at the waist to about 90°, supporting yourself with your non-affected arm.',
+      'Let your affected arm hang completely free and relaxed — no muscle tension.',
+      'Using a gentle rocking motion from your body (not your arm), let the arm swing clockwise for one minute.',
+      'Then reverse direction — anti-clockwise for one minute.',
+      'The arm should be entirely passive throughout — gravity does the work.',
+      'Keep the circles small, roughly the size of a dinner plate.',
+    ],
+    notes: 'This exercise uses gravity to gently mobilise the shoulder joint. Do not try to actively move the arm with your muscles. Ideal first thing in the morning and after long periods of sitting.',
+  },
+];
+
+let state = {
+  view: 'login',      // login | exercises | detail | appointments | progress | notifications | account
+  selectedId: null,
+  email: '',
+  password: '',
+  loginError: false,
+  checkIn: null,      // { exerciseId, value }
+  slotRequested: false,
+  showMenu: false,
+  // account details (editable)
+  acctName: 'Ciarán Murphy',
+  acctEmail: 'ciaran.murphy@email.com',
+  acctPhone: '+353 87 123 4567',
+  acctSaved: false,
+};
+
+function setState(patch) {
+  state = { ...state, ...(typeof patch === 'function' ? patch(state) : patch) };
+  render();
+}
+
+// ── helpers ──────────────────────────────────────────────────────────────────
+
+function h(str) {
+  return String(str)
+    .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+}
+
+const SVG_PLAY = `<svg width="8" height="10" viewBox="0 0 8 10" fill="none"><path d="M1 1L7 5L1 9V1Z" fill="white" fill-opacity="0.85"/></svg>`;
+const SVG_PLAY_LG = `<svg width="18" height="22" viewBox="0 0 18 22" fill="none"><path d="M2 2L16 11L2 20V2Z" fill="white" fill-opacity="0.85"/></svg>`;
+const SVG_CHEVRON_R = `<svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M6 4L10 8L6 12" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
+const SVG_CHEVRON_L = `<svg width="18" height="18" viewBox="0 0 18 18" fill="none"><path d="M11 4.5L6.5 9L11 13.5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
+const SVG_CHECK_CIRCLE = (color='#1AAFC0') => `<svg width="18" height="18" viewBox="0 0 18 18"><circle cx="9" cy="9" r="8" fill="${color}"/><path d="M5 9L7.5 11.5L13 6" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
+const SVG_INFO = `<svg width="17" height="17" viewBox="0 0 17 17" fill="none"><circle cx="8.5" cy="8.5" r="7.5" stroke="#1AAFC0" stroke-width="1.3"/><path d="M8.5 7.5V11.5" stroke="#1AAFC0" stroke-width="1.3" stroke-linecap="round"/><circle cx="8.5" cy="5.5" r="0.7" fill="#1AAFC0"/></svg>`;
+const SVG_SIGNOUT = `<svg width="15" height="15" viewBox="0 0 15 15" fill="none"><path d="M5.5 13H3C2.45 13 2 12.55 2 12V3C2 2.45 2.45 2 3 2H5.5" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/><path d="M10 10.5L13 8L10 5.5" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/><line x1="13" y1="8" x2="5.5" y2="8" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg>`;
+
+// ── nav icons ─────────────────────────────────────────────────────────────────
+
+const NAV_EXERCISES    = `<svg width="20" height="16" viewBox="0 0 20 16" fill="currentColor"><rect y="0" width="20" height="2.5" rx="1.25"/><rect y="6.75" width="20" height="2.5" rx="1.25"/><rect y="13.5" width="20" height="2.5" rx="1.25"/></svg>`;
+const NAV_APPOINTMENTS = `<svg width="19" height="19" viewBox="0 0 19 19" fill="none"><rect x="0.75" y="2.75" width="17.5" height="15.5" rx="2" stroke="currentColor" stroke-width="1.5"/><line x1="0.75" y1="7.5" x2="18.25" y2="7.5" stroke="currentColor" stroke-width="1.5"/><rect x="5.25" y="0.5" width="1.5" height="4.5" rx="0.75" fill="currentColor"/><rect x="12.25" y="0.5" width="1.5" height="4.5" rx="0.75" fill="currentColor"/></svg>`;
+const NAV_PROGRESS     = `<svg width="19" height="17" viewBox="0 0 19 17" fill="currentColor"><rect x="0" y="7" width="5" height="10" rx="1.5"/><rect x="7" y="2" width="5" height="15" rx="1.5"/><rect x="14" y="4" width="5" height="13" rx="1.5"/></svg>`;
+const NAV_BELL         = `<svg width="18" height="20" viewBox="0 0 18 20" fill="none"><path d="M3.5 8.5C3.5 5.74 5.74 3.5 8.5 3.5C11.26 3.5 13.5 5.74 13.5 8.5V13L15.5 15H1.5L3.5 13V8.5Z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/><path d="M7 15C7 16.1 7.67 17 8.5 17C9.33 17 10 16.1 10 15" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>`;
+
+// ── RENDER ────────────────────────────────────────────────────────────────────
+
+function render() {
+  document.getElementById('app').innerHTML =
+    state.view === 'login' ? renderLogin() : renderApp();
+  bind();
+}
+
+// ── LOGIN ─────────────────────────────────────────────────────────────────────
+
+function renderLogin() {
+  return `
+  <div style="min-height:100vh;display:flex;align-items:center;justify-content:center;padding:24px 16px;">
+    <div style="max-width:390px;width:100%;background:#fff;border-radius:24px;box-shadow:0 20px 60px rgba(0,0,0,.28),0 4px 12px rgba(0,0,0,.12);padding:40px 32px;animation:slideUp .4s ease;">
+
+      <div style="display:flex;flex-direction:column;align-items:center;margin-bottom:30px;">
+        <div style="width:72px;height:72px;background:#EDF7F9;border-radius:16px;display:flex;align-items:center;justify-content:center;overflow:hidden;margin-bottom:14px;">
+          <img src="${LOGO}" class="logo-img" style="width:62px;height:62px;object-fit:contain;" alt="Limerick Physio Rooms">
+        </div>
+        <div style="font-size:12.5px;font-weight:700;color:#0C2D48;letter-spacing:1.2px;text-transform:uppercase;text-align:center;line-height:1.4;">Limerick Physio Rooms</div>
+        <div style="font-size:12px;color:#1AAFC0;font-weight:600;margin-top:4px;letter-spacing:.2px;">Patient Portal</div>
+      </div>
+
+      ${state.loginError ? `
+      <div style="background:#FEF2F2;border:1px solid #FECACA;border-radius:8px;padding:10px 13px;margin-bottom:14px;font-size:13px;color:#B91C1C;animation:fadeIn .15s ease;">
+        Please enter your email and password to continue.
+      </div>` : ''}
+
+      <div style="margin-bottom:14px;">
+        <label style="display:block;font-size:12.5px;font-weight:600;color:#0C2D48;margin-bottom:6px;">Email</label>
+        <input id="inp-email" type="email" value="${h(state.email)}" placeholder="your@email.com"
+          class="form-input"
+          style="width:100%;padding:12px 13px;border:1.5px solid #E0E8EC;border-radius:10px;font-size:15px;color:#0C2D48;background:#FAFCFD;">
+      </div>
+
+      <div style="margin-bottom:26px;">
+        <label style="display:block;font-size:12.5px;font-weight:600;color:#0C2D48;margin-bottom:6px;">Password</label>
+        <input id="inp-pw" type="password" value="${h(state.password)}" placeholder="••••••••"
+          class="form-input"
+          style="width:100%;padding:12px 13px;border:1.5px solid #E0E8EC;border-radius:10px;font-size:15px;color:#0C2D48;background:#FAFCFD;">
+      </div>
+
+      <button id="btn-login" class="btn-sign-in"
+        style="width:100%;padding:14px;background:#1AAFC0;color:#fff;border:none;border-radius:10px;font-size:15px;font-weight:700;cursor:pointer;letter-spacing:.2px;">
+        Sign In
+      </button>
+
+      <p style="text-align:center;margin-top:16px;font-size:12.5px;color:#B0BCC8;">
+        Need help? <span style="color:#1AAFC0;cursor:pointer;font-weight:500;">Contact the clinic</span>
+      </p>
+    </div>
+  </div>`;
+}
+
+// ── APP SHELL ─────────────────────────────────────────────────────────────────
+
+function renderApp() {
+  const v = state.view;
+  const isEx = v === 'exercises' || v === 'detail';
+
+  let content = '';
+  if (v === 'exercises')          content = renderExercises();
+  else if (v === 'detail')        content = renderDetail();
+  else if (v === 'appointments')  content = renderAppointments();
+  else if (v === 'progress')      content = renderProgress();
+  else if (v === 'notifications') content = renderNotifications();
+  else if (v === 'account')       content = renderAccount();
+
+  const pageTitle = { exercises:'Your Programme', detail:'Exercises', appointments:'Appointments', progress:'Progress', notifications:'Notifications', account:'Account Details' }[v] || '';
+
+  return `
+  <div class="app-shell" style="max-width:600px;margin:0 auto;height:100vh;display:flex;flex-direction:column;background:#F5F8FA;">
+
+    <!-- DESKTOP SIDEBAR (hidden on mobile via CSS) -->
+    <aside class="desktop-sidebar">
+      <div class="sidebar-logo-area">
+        <div style="width:42px;height:42px;background:#EDF7F9;border-radius:10px;overflow:hidden;flex-shrink:0;display:flex;align-items:center;justify-content:center;">
+          <img src="${LOGO}" class="logo-img" style="width:36px;height:36px;object-fit:contain;" alt="">
+        </div>
+        <div>
+          <div class="sidebar-brand-name">Limerick Physio Rooms</div>
+          <div class="sidebar-brand-sub">Patient Portal</div>
+        </div>
+      </div>
+
+      <nav class="sidebar-nav">
+        ${sidebarItem('exercises',    NAV_EXERCISES,    'Exercises',    isEx)}
+        ${sidebarItem('appointments', NAV_APPOINTMENTS, 'Appointments', v === 'appointments')}
+        ${sidebarItem('progress',     NAV_PROGRESS,     'Progress',     v === 'progress')}
+        ${sidebarItemBell(v === 'notifications')}
+      </nav>
+
+      <div class="sidebar-user-area">
+        <div style="width:34px;height:34px;border-radius:50%;background:#1AAFC0;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;color:#fff;flex-shrink:0;letter-spacing:.3px;">CM</div>
+        <div style="flex:1;min-width:0;">
+          <div style="font-size:13px;font-weight:700;color:#0C2D48;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">Ciarán Murphy</div>
+          <div style="font-size:11px;color:#7A8C98;margin-top:1px;">Lower Back Rehab</div>
+        </div>
+        <button id="btn-signout-sidebar" class="sidebar-signout-btn" title="Sign Out">${SVG_SIGNOUT}</button>
+      </div>
+    </aside>
+
+    <!-- MAIN PANEL -->
+    <div class="main-panel" style="flex:1;min-width:0;display:flex;flex-direction:column;">
+
+      <!-- HEADER -->
+      <header style="flex-shrink:0;height:56px;background:#fff;border-bottom:1px solid #E8EEF2;display:flex;align-items:center;padding:0 16px;gap:10px;position:relative;z-index:20;">
+
+        <!-- Logo group — visible on mobile, hidden on desktop -->
+        <div class="header-logo-group" style="display:flex;align-items:center;gap:10px;flex:1;min-width:0;">
+          <div style="width:32px;height:32px;background:#EDF7F9;border-radius:8px;overflow:hidden;flex-shrink:0;display:flex;align-items:center;justify-content:center;">
+            <img src="${LOGO}" class="logo-img" style="width:28px;height:28px;object-fit:contain;" alt="">
+          </div>
+          <div style="flex:1;min-width:0;">
+            <div style="font-size:12.5px;font-weight:700;color:#0C2D48;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">Limerick Physio Rooms</div>
+            <div style="font-size:10px;color:#1AAFC0;font-weight:600;letter-spacing:.2px;">Patient Portal</div>
+          </div>
+        </div>
+
+        <!-- Page title — hidden on mobile, visible on desktop -->
+        <div style="display:none;flex:1;min-width:0;align-items:center;gap:6px;" class="header-desktop-title">
+          ${v === 'detail' ? `
+            <button id="btn-back" class="back-btn" style="display:inline-flex;align-items:center;gap:4px;background:none;border:none;cursor:pointer;color:#7A8C98;font-size:14px;padding:0;margin-right:2px;">
+              ${SVG_CHEVRON_L} <span style="font-size:21px;font-weight:700;color:#0C2D48;">Exercises</span>
+            </button>` : `
+            <span style="font-size:21px;font-weight:700;color:#0C2D48;">${pageTitle}</span>`}
+        </div>
+
+        <div id="btn-avatar"
+          style="width:36px;height:36px;border-radius:50%;background:#1AAFC0;display:flex;align-items:center;justify-content:center;font-size:12.5px;font-weight:700;color:#fff;cursor:pointer;flex-shrink:0;letter-spacing:.3px;user-select:none;">
+          CM
+        </div>
+
+        ${state.showMenu ? `
+        <div style="position:absolute;top:60px;right:12px;background:#fff;border-radius:16px;box-shadow:0 8px 32px rgba(12,45,72,.16),0 2px 8px rgba(12,45,72,.08);border:1px solid #E8EEF2;z-index:100;min-width:220px;overflow:hidden;animation:dropIn .15s ease;">
+          <div style="padding:14px 16px;border-bottom:1px solid #F0F5F8;display:flex;align-items:center;gap:11px;">
+            <div style="width:38px;height:38px;border-radius:50%;background:#1AAFC0;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;color:#fff;flex-shrink:0;">CM</div>
+            <div>
+              <div style="font-size:13.5px;font-weight:700;color:#0C2D48;">${h(state.acctName)}</div>
+              <div style="font-size:11.5px;color:#7A8C98;margin-top:2px;">Lower Back Rehab</div>
+              <div style="font-size:11px;color:#A8B8C4;margin-top:1px;">${h(state.acctEmail)}</div>
+            </div>
+          </div>
+          <div id="btn-edit-account" class="menu-sign-out"
+            style="padding:11px 16px;font-size:13.5px;font-weight:500;color:#0C2D48;cursor:pointer;display:flex;align-items:center;gap:9px;border-bottom:1px solid #F5F8FA;"
+            onmouseenter="this.style.background='#F5F8FA'" onmouseleave="this.style.background=''">
+            <svg width="15" height="15" viewBox="0 0 15 15" fill="none"><path d="M10.5 1.5L13.5 4.5L5 13H2V10L10.5 1.5Z" stroke="#1AAFC0" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            Edit Account Details
+          </div>
+          <div id="btn-signout" class="menu-sign-out"
+            style="padding:11px 16px;font-size:13.5px;font-weight:500;color:#C0392B;cursor:pointer;display:flex;align-items:center;gap:9px;"
+            onmouseenter="this.style.background='#FEF2F2'" onmouseleave="this.style.background=''">
+            ${SVG_SIGNOUT} Sign Out
+          </div>
+        </div>` : ''}
+      </header>
+
+      <!-- MAIN CONTENT -->
+      <main style="flex:1;min-height:0;overflow-y:auto;">
+        <div class="content-wrap">${content}</div>
+      </main>
+
+      <!-- BOTTOM NAV (mobile only — hidden on desktop via CSS) -->
+      <nav class="bottom-nav" style="flex-shrink:0;height:64px;background:#fff;border-top:1px solid #E8EEF2;display:flex;align-items:stretch;">
+        ${navTab('exercises',     NAV_EXERCISES,    'Exercises',    isEx)}
+        ${navTab('appointments',  NAV_APPOINTMENTS, 'Appointments', v === 'appointments')}
+        ${navTab('progress',      NAV_PROGRESS,     'Progress',     v === 'progress')}
+        ${navTabBell(v === 'notifications')}
+      </nav>
+    </div><!-- /main-panel -->
+  </div><!-- /app-shell -->`;
+}
+
+// ── SIDEBAR HELPERS ───────────────────────────────────────────────────────────
+
+function sidebarItem(view, icon, label, active) {
+  return `<div data-nav="${view}" class="sidebar-item${active ? ' active' : ''}">
+    ${icon} ${label}
+  </div>`;
+}
+
+function sidebarItemBell(active) {
+  return `<div data-nav="notifications" class="sidebar-item${active ? ' active' : ''}">
+    ${NAV_BELL} Alerts
+    <span class="sidebar-notif-dot">2</span>
+  </div>`;
+}
+
+// ── BOTTOM NAV HELPERS ────────────────────────────────────────────────────────
+
+function navTab(view, icon, label, active) {
+  const color = active ? '#1AAFC0' : '#9BAAB4';
+  const fw    = active ? 'font-weight:700;' : '';
+  const cls   = active ? '' : 'class="nav-inactive"';
+  return `<div data-nav="${view}" ${cls}
+    style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;cursor:pointer;color:${color};">
+    ${icon}
+    <span style="font-size:10px;${fw}letter-spacing:.1px;">${label}</span>
+  </div>`;
+}
+
+function navTabBell(active) {
+  const color = active ? '#1AAFC0' : '#9BAAB4';
+  const fw    = active ? 'font-weight:700;' : '';
+  const cls   = active ? '' : 'class="nav-inactive"';
+  return `<div data-nav="notifications" ${cls}
+    style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;cursor:pointer;color:${color};">
+    <div style="position:relative;display:inline-flex;">
+      ${NAV_BELL}
+      <div style="position:absolute;top:-4px;right:-7px;width:15px;height:15px;background:#1AAFC0;border-radius:50%;font-size:8px;font-weight:700;color:#fff;display:flex;align-items:center;justify-content:center;border:1.5px solid #fff;">2</div>
+    </div>
+    <span style="font-size:10px;${fw}letter-spacing:.1px;">Alerts</span>
+  </div>`;
+}
+
+// ── EXERCISES LIST ────────────────────────────────────────────────────────────
+
+function renderExercises() {
+  const cards = EXERCISES.map(e => `
+  <div data-exercise="${e.id}" class="exercise-card"
+    style="background:#fff;border-radius:14px;padding:13px;display:flex;gap:13px;align-items:center;box-shadow:0 1px 3px rgba(12,45,72,.07),0 1px 2px rgba(12,45,72,.04);cursor:pointer;">
+    <div style="width:72px;height:72px;flex-shrink:0;background:#0C2D48;border-radius:10px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;">
+      <div style="font-size:7.5px;color:#1AAFC0;font-weight:700;letter-spacing:.5px;text-transform:uppercase;text-align:center;padding:0 5px;line-height:1.3;">${h(e.category)}</div>
+      <div style="width:26px;height:26px;border-radius:50%;border:1.5px solid rgba(255,255,255,.28);display:flex;align-items:center;justify-content:center;">${SVG_PLAY}</div>
+    </div>
+    <div style="flex:1;min-width:0;">
+      <div style="font-size:15px;font-weight:700;color:#0C2D48;margin-bottom:3px;line-height:1.25;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${h(e.name)}</div>
+      <div style="font-size:12px;color:#7A8C98;margin-bottom:4px;">${e.sets} sets · ${h(e.reps)} · ${h(e.frequency)}</div>
+      <div style="font-size:10.5px;color:#B0BCC8;">Added ${e.assignedDate}</div>
+    </div>
+    <div style="flex-shrink:0;color:#C8D4DC;">${SVG_CHEVRON_R}</div>
+  </div>`).join('');
+
+  return `
+  <div style="padding:20px 16px 16px;animation:fadeIn .2s ease;">
+    <div style="margin-bottom:18px;">
+      <p style="font-size:12.5px;color:#7A8C98;">5 exercises · Physio: Paudie Ives · Updated 12 Jun</p>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:10px;">${cards}</div>
+  </div>`;
+}
+
+// ── EXERCISE DETAIL ───────────────────────────────────────────────────────────
+
+function renderDetail() {
+  const ex = EXERCISES.find(e => e.id === state.selectedId);
+  if (!ex) return '';
+  const done = !!(state.checkIn && state.checkIn.exerciseId === state.selectedId);
+
+  const steps = ex.instructions.map((txt, i) => `
+  <div style="display:flex;gap:11px;align-items:flex-start;">
+    <div style="width:22px;height:22px;border-radius:50%;background:#EDF7F9;color:#1AAFC0;font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px;">${i+1}</div>
+    <p style="font-size:14px;color:#3A5068;line-height:1.62;">${h(txt)}</p>
+  </div>`).join('');
+
+  return `
+  <div style="animation:fadeIn .2s ease;">
+    <div style="width:100%;aspect-ratio:16/9;background:#0C2D48;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;">
+      <div style="font-size:10.5px;color:#1AAFC0;font-weight:700;letter-spacing:1px;text-transform:uppercase;">${h(ex.category)}</div>
+      <div class="play-btn" style="width:58px;height:58px;border-radius:50%;border:2px solid rgba(255,255,255,.28);display:flex;align-items:center;justify-content:center;cursor:pointer;transition:border-color .15s,background .15s;">
+        ${SVG_PLAY_LG}
+      </div>
+      <div style="font-size:12px;color:rgba(255,255,255,.38);">${h(ex.name)}</div>
+    </div>
+
+    <div style="padding:18px 16px 36px;">
+
+      <div style="margin-bottom:18px;">
+        <div style="display:flex;align-items:flex-start;gap:9px;flex-wrap:wrap;margin-bottom:5px;">
+          <h1 style="font-size:20px;font-weight:700;color:#0C2D48;line-height:1.3;">${h(ex.name)}</h1>
+          <span style="font-size:10.5px;font-weight:600;color:#1AAFC0;background:#EDF7F9;padding:3px 9px;border-radius:20px;flex-shrink:0;margin-top:3px;">${h(ex.category)}</span>
+        </div>
+        <p style="font-size:12.5px;color:#7A8C98;">Paudie Ives · Added ${ex.assignedDate}</p>
+      </div>
+
+      <div style="display:flex;gap:8px;margin-bottom:18px;">
+        <div style="flex:1;background:#fff;border-radius:10px;padding:12px 8px;text-align:center;box-shadow:0 1px 3px rgba(12,45,72,.07);">
+          <div style="font-size:20px;font-weight:700;color:#0C2D48;line-height:1;">${ex.sets}</div>
+          <div style="font-size:9.5px;color:#7A8C98;margin-top:3px;text-transform:uppercase;letter-spacing:.4px;font-weight:600;">Sets</div>
+        </div>
+        <div style="flex:2;background:#fff;border-radius:10px;padding:12px 8px;text-align:center;box-shadow:0 1px 3px rgba(12,45,72,.07);">
+          <div style="font-size:14px;font-weight:700;color:#0C2D48;line-height:1.2;">${h(ex.reps)}</div>
+          <div style="font-size:9.5px;color:#7A8C98;margin-top:3px;text-transform:uppercase;letter-spacing:.4px;font-weight:600;">Reps / Hold</div>
+        </div>
+        <div style="flex:2;background:#fff;border-radius:10px;padding:12px 8px;text-align:center;box-shadow:0 1px 3px rgba(12,45,72,.07);">
+          <div style="font-size:12.5px;font-weight:700;color:#0C2D48;line-height:1.3;">${h(ex.frequency)}</div>
+          <div style="font-size:9.5px;color:#7A8C98;margin-top:3px;text-transform:uppercase;letter-spacing:.4px;font-weight:600;">Frequency</div>
+        </div>
+      </div>
+
+      <div style="background:#fff;border-radius:14px;padding:18px;margin-bottom:12px;box-shadow:0 1px 3px rgba(12,45,72,.07);">
+        <div style="font-size:11px;font-weight:700;color:#0C2D48;margin-bottom:16px;letter-spacing:.6px;text-transform:uppercase;">How to do this</div>
+        <div style="display:flex;flex-direction:column;gap:12px;">${steps}</div>
+      </div>
+
+      <div style="background:#EDF7F9;border-radius:12px;padding:14px 15px;margin-bottom:12px;border-left:3px solid #1AAFC0;">
+        <div style="font-size:9.5px;font-weight:700;color:#1AAFC0;letter-spacing:.8px;text-transform:uppercase;margin-bottom:5px;">Note from Paudie</div>
+        <p style="font-size:13.5px;color:#3A5068;line-height:1.55;">${h(ex.notes)}</p>
+      </div>
+
+      <div style="background:#fff;border-radius:14px;padding:16px;box-shadow:0 1px 3px rgba(12,45,72,.07);position:relative;">
+        <div style="position:absolute;top:13px;right:13px;font-size:8.5px;font-weight:700;color:#1AAFC0;background:#EDF7F9;padding:2px 7px;border-radius:4px;letter-spacing:.5px;">PHASE 2</div>
+        <h3 style="font-size:14px;font-weight:700;color:#0C2D48;margin-bottom:3px;">How did this feel?</h3>
+        <p style="font-size:12.5px;color:#7A8C98;margin-bottom:14px;">Helps Paudie fine-tune your programme.</p>
+        ${done ? `
+        <div style="display:flex;align-items:center;gap:9px;padding:12px 13px;background:#EDF7F9;border-radius:9px;animation:fadeIn .2s ease;">
+          ${SVG_CHECK_CIRCLE()}
+          <span style="font-size:13.5px;font-weight:600;color:#0C2D48;">Recorded — Paudie will see this.</span>
+        </div>` : `
+        <div style="display:flex;gap:8px;">
+          <button id="btn-easy" class="check-easy" style="flex:1;padding:12px 4px;background:#F0FBF3;border:1.5px solid #B8E8C8;border-radius:9px;font-size:13px;font-weight:600;color:#2E7D52;cursor:pointer;">Easy</button>
+          <button id="btn-jr"   class="check-jr"   style="flex:1;padding:12px 4px;background:#EDF7F9;border:1.5px solid #B0DEED;border-radius:9px;font-size:13px;font-weight:600;color:#1078A0;cursor:pointer;">Just Right</button>
+          <button id="btn-hard" class="check-hard" style="flex:1;padding:12px 4px;background:#FFF5F0;border:1.5px solid #FBCAB0;border-radius:9px;font-size:13px;font-weight:600;color:#C05020;cursor:pointer;">Hard</button>
+        </div>`}
+      </div>
+    </div>
+  </div>`;
+}
+
+// ── APPOINTMENTS ──────────────────────────────────────────────────────────────
+
+function renderAppointments() {
+  return `
+  <div style="padding:18px 16px 36px;animation:fadeIn .2s ease;">
+    <div style="background:#EDF7F9;border:1.5px solid #BEE8EE;border-radius:12px;padding:12px 14px;margin-bottom:20px;display:flex;gap:10px;align-items:flex-start;">
+      <div style="flex-shrink:0;margin-top:1px;">${SVG_INFO}</div>
+      <p style="font-size:12.5px;color:#3A5068;line-height:1.5;"><strong style="color:#0C2D48;">Phase 2 Preview.</strong> Appointments will sync with Cliniko automatically when this phase launches.</p>
+    </div>
+
+    <h1 style="font-size:21px;font-weight:700;color:#0C2D48;margin-bottom:4px;">Appointments</h1>
+    <p style="font-size:12.5px;color:#7A8C98;margin-bottom:18px;">Limerick Physio Rooms</p>
+
+    <div style="background:#0C2D48;border-radius:16px;padding:22px;margin-bottom:18px;position:relative;overflow:hidden;">
+      <div style="position:absolute;top:-40px;right:-40px;width:160px;height:160px;background:rgba(26,175,192,.07);border-radius:50%;pointer-events:none;"></div>
+      <div style="font-size:9.5px;font-weight:700;color:#1AAFC0;letter-spacing:1.1px;text-transform:uppercase;margin-bottom:10px;">Next Appointment</div>
+      <div style="font-size:23px;font-weight:700;color:#fff;margin-bottom:2px;">Thursday, 26 June</div>
+      <div style="font-size:16px;color:rgba(255,255,255,.58);margin-bottom:3px;">2:30 PM — 3:15 PM</div>
+      <div style="font-size:12.5px;color:rgba(255,255,255,.38);margin-bottom:20px;">Paudie Ives · Riverpoint Building, Limerick</div>
+      ${state.slotRequested ? `
+      <div style="display:inline-flex;align-items:center;gap:8px;background:rgba(26,175,192,.2);border-radius:9px;padding:10px 15px;animation:fadeIn .2s ease;">
+        ${SVG_CHECK_CIRCLE()}
+        <span style="font-size:13.5px;font-weight:600;color:#fff;">Request sent — our team will confirm your slot.</span>
+      </div>` : `
+      <button id="btn-slot" class="request-slot-btn"
+        style="background:#1AAFC0;color:#fff;border:none;padding:10px 20px;border-radius:9px;font-size:14px;font-weight:600;cursor:pointer;transition:background .15s;">
+        Request Next Slot →
+      </button>`}
+    </div>
+
+    <div style="font-size:14px;font-weight:700;color:#0C2D48;margin-bottom:12px;">Past Sessions</div>
+    <div style="display:flex;flex-direction:column;gap:9px;">
+      ${pastSession('Wed 11 June 2026', 'Paudie Ives · Physiotherapy · 45 min')}
+      ${pastSession('Wed 28 May 2026',  'Paudie Ives · Initial Assessment · 60 min')}
+    </div>
+  </div>`;
+}
+
+function pastSession(date, sub) {
+  return `
+  <div style="background:#fff;border-radius:12px;padding:14px 15px;display:flex;align-items:center;justify-content:space-between;box-shadow:0 1px 3px rgba(12,45,72,.06);">
+    <div>
+      <div style="font-size:13.5px;font-weight:600;color:#0C2D48;margin-bottom:2px;">${date}</div>
+      <div style="font-size:12px;color:#7A8C98;">${sub}</div>
+    </div>
+    <span style="font-size:11px;font-weight:600;color:#16865C;background:#E8F5EF;padding:3px 10px;border-radius:20px;white-space:nowrap;">Done</span>
+  </div>`;
+}
+
+// ── PROGRESS ──────────────────────────────────────────────────────────────────
+
+function renderProgress() {
+  const days = [
+    { label:'Mon', done:true  },
+    { label:'Tue', done:true  },
+    { label:'Wed', done:true  },
+    { label:'Thu', done:true  },
+    { label:'Fri', skip:true  },
+    { label:'Sat', future:true },
+    { label:'Sun', future:true },
+  ];
+
+  const dots = days.map(d => {
+    let dot, labelColor;
+    if (d.done) {
+      dot = `<div style="width:36px;height:36px;border-radius:50%;background:#1AAFC0;display:flex;align-items:center;justify-content:center;"><svg width="13" height="10" viewBox="0 0 13 10" fill="none"><path d="M1 5L4 8L12 1" stroke="white" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg></div>`;
+      labelColor = '#7A8C98';
+    } else if (d.skip) {
+      dot = `<div style="width:36px;height:36px;border-radius:50%;background:#E8EEF2;border:2px solid #D0DAE2;display:flex;align-items:center;justify-content:center;"><div style="width:6px;height:6px;border-radius:50%;background:#A8B8C4;"></div></div>`;
+      labelColor = '#B0BCC8';
+    } else {
+      dot = `<div style="width:36px;height:36px;border-radius:50%;background:#F5F8FA;border:1.5px dashed #D0DAE2;"></div>`;
+      labelColor = '#C4CCD4';
+    }
+    return `<div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:6px;">${dot}<span style="font-size:10.5px;color:${labelColor};font-weight:500;">${d.label}</span></div>`;
+  }).join('');
+
+  return `
+  <div style="padding:18px 16px 36px;animation:fadeIn .2s ease;">
+    <div style="background:#EDF7F9;border:1.5px solid #BEE8EE;border-radius:12px;padding:12px 14px;margin-bottom:20px;display:flex;gap:10px;align-items:flex-start;">
+      <div style="flex-shrink:0;margin-top:1px;">${SVG_INFO}</div>
+      <p style="font-size:12.5px;color:#3A5068;line-height:1.5;"><strong style="color:#0C2D48;">Phase 2 Preview.</strong> Exercise check-ins will feed into this automatically, giving Paudie a real-time view of your progress.</p>
+    </div>
+
+    <h1 style="font-size:21px;font-weight:700;color:#0C2D48;margin-bottom:4px;">Progress</h1>
+    <p style="font-size:12.5px;color:#7A8C98;margin-bottom:18px;">Week of 16–22 June 2026</p>
+
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px;">
+      ${statCard('80%',  'Adherence',     '<div style="margin-top:9px;height:4px;background:#E8EEF2;border-radius:2px;overflow:hidden;"><div style="width:80%;height:100%;background:#1AAFC0;border-radius:2px;"></div></div>')}
+      ${statCard('<span style="font-size:28px;font-weight:700;color:#0C2D48;line-height:1;">4</span><span style="font-size:13px;color:#7A8C98;font-weight:500;">/5</span>', 'This week', '', true)}
+      ${statCard('4',  'Day streak')}
+      ${statCard('12', 'Total sessions')}
+    </div>
+
+    <div style="background:#fff;border-radius:14px;padding:16px;margin-bottom:12px;box-shadow:0 1px 3px rgba(12,45,72,.07);">
+      <div style="font-size:11px;font-weight:700;color:#0C2D48;margin-bottom:16px;letter-spacing:.5px;text-transform:uppercase;">This Week</div>
+      <div style="display:flex;justify-content:space-between;gap:4px;">${dots}</div>
+    </div>
+
+    <div style="background:#fff;border-radius:14px;padding:16px;box-shadow:0 1px 3px rgba(12,45,72,.07);">
+      <div style="font-size:11px;font-weight:700;color:#0C2D48;margin-bottom:14px;letter-spacing:.5px;text-transform:uppercase;">Recent Activity</div>
+      <div style="display:flex;flex-direction:column;gap:11px;">
+        ${actRow('All 5 exercises completed', 'Thu 18 Jun', true)}
+        ${actRow('3 of 5 completed',          'Wed 17 Jun', true)}
+        ${actRow('All 5 exercises completed', 'Tue 16 Jun', true)}
+        ${actRow('All 5 exercises completed', 'Mon 15 Jun', false)}
+      </div>
+    </div>
+  </div>`;
+}
+
+function statCard(val, label, extra='', raw=false) {
+  const inner = raw ? val : `<div style="font-size:28px;font-weight:700;color:#0C2D48;line-height:1;">${val}</div>`;
+  return `
+  <div style="background:#fff;border-radius:14px;padding:16px;box-shadow:0 1px 3px rgba(12,45,72,.07);">
+    <div style="display:flex;align-items:baseline;gap:3px;">${inner}</div>
+    <div style="font-size:11.5px;color:#7A8C98;margin-top:4px;">${label}</div>
+    ${extra}
+  </div>`;
+}
+
+function actRow(text, date, border) {
+  const borderStyle = border ? 'padding-bottom:11px;border-bottom:1px solid #F2F5F8;' : '';
+  return `
+  <div style="display:flex;align-items:center;gap:10px;${borderStyle}">
+    <div style="width:7px;height:7px;border-radius:50%;background:#1AAFC0;flex-shrink:0;"></div>
+    <span style="font-size:13px;color:#0C2D48;font-weight:500;">${text}</span>
+    <span style="font-size:11.5px;color:#A8B8C4;margin-left:auto;white-space:nowrap;">${date}</span>
+  </div>`;
+}
+
+// ── NOTIFICATIONS ─────────────────────────────────────────────────────────────
+
+function renderNotifications() {
+  return `
+  <div style="padding:18px 16px 36px;animation:fadeIn .2s ease;">
+    <div style="background:#EDF7F9;border:1.5px solid #BEE8EE;border-radius:12px;padding:12px 14px;margin-bottom:20px;display:flex;gap:10px;align-items:flex-start;">
+      <div style="flex-shrink:0;margin-top:1px;">${SVG_INFO}</div>
+      <p style="font-size:12.5px;color:#3A5068;line-height:1.5;"><strong style="color:#0C2D48;">Phase 2 Preview.</strong> Patients receive targeted reminders and exercise updates directly from the clinic.</p>
+    </div>
+
+    <h1 style="font-size:21px;font-weight:700;color:#0C2D48;margin-bottom:4px;">Notifications</h1>
+    <p style="font-size:12.5px;color:#7A8C98;margin-bottom:18px;">2 new</p>
+
+    <div style="display:flex;flex-direction:column;gap:8px;">
+
+      <div style="background:#fff;border-radius:14px;padding:14px;display:flex;gap:12px;align-items:flex-start;box-shadow:0 1px 3px rgba(12,45,72,.07);border-left:3px solid #1AAFC0;">
+        <div style="width:34px;height:34px;border-radius:50%;background:#EDF7F9;flex-shrink:0;display:flex;align-items:center;justify-content:center;">
+          <svg width="15" height="14" viewBox="0 0 15 14" fill="none"><rect x=".75" y="1.75" width="13.5" height="10.5" rx="1.5" stroke="#1AAFC0" stroke-width="1.3"/><path d="M1 5L7.5 9L14 5" stroke="#1AAFC0" stroke-width="1.3"/></svg>
+        </div>
+        <div style="flex:1;min-width:0;">
+          <div style="font-size:13.5px;font-weight:600;color:#0C2D48;margin-bottom:2px;">New exercise assigned</div>
+          <div style="font-size:12.5px;color:#6B7C8C;line-height:1.5;">Paudie has added <strong style="color:#0C2D48;">Shoulder Pendulum</strong> to your programme.</div>
+          <div style="font-size:11px;color:#A8B8C4;margin-top:5px;">2 hours ago</div>
+        </div>
+        <div style="width:8px;height:8px;border-radius:50%;background:#1AAFC0;flex-shrink:0;margin-top:3px;"></div>
+      </div>
+
+      <div style="background:#fff;border-radius:14px;padding:14px;display:flex;gap:12px;align-items:flex-start;box-shadow:0 1px 3px rgba(12,45,72,.07);border-left:3px solid #1AAFC0;">
+        <div style="width:34px;height:34px;border-radius:50%;background:#EDF7F9;flex-shrink:0;display:flex;align-items:center;justify-content:center;">
+          <svg width="15" height="15" viewBox="0 0 15 15" fill="none"><rect x=".75" y="2.75" width="13.5" height="11.5" rx="1.5" stroke="#1AAFC0" stroke-width="1.3"/><line x1=".75" y1="6.5" x2="14.25" y2="6.5" stroke="#1AAFC0" stroke-width="1.3"/><rect x="4" y="1" width="1.3" height="3.5" rx=".65" fill="#1AAFC0"/><rect x="9.7" y="1" width="1.3" height="3.5" rx=".65" fill="#1AAFC0"/></svg>
+        </div>
+        <div style="flex:1;min-width:0;">
+          <div style="font-size:13.5px;font-weight:600;color:#0C2D48;margin-bottom:2px;">Appointment tomorrow</div>
+          <div style="font-size:12.5px;color:#6B7C8C;line-height:1.5;"><strong style="color:#0C2D48;">Thursday 26 June</strong> at 2:30 PM with Paudie Ives.</div>
+          <div style="font-size:11px;color:#A8B8C4;margin-top:5px;">Yesterday</div>
+        </div>
+        <div style="width:8px;height:8px;border-radius:50%;background:#1AAFC0;flex-shrink:0;margin-top:3px;"></div>
+      </div>
+
+      <div style="background:#fff;border-radius:14px;padding:14px;display:flex;gap:12px;align-items:flex-start;box-shadow:0 1px 2px rgba(12,45,72,.04);">
+        <div style="width:34px;height:34px;border-radius:50%;background:#F5F8FA;flex-shrink:0;display:flex;align-items:center;justify-content:center;">
+          <svg width="14" height="13" viewBox="0 0 14 13" fill="none"><rect x="0" y="5" width="4" height="8" rx="1" fill="#B0BCC8"/><rect x="5" y="1" width="4" height="12" rx="1" fill="#B0BCC8"/><rect x="10" y="3" width="4" height="10" rx="1" fill="#B0BCC8"/></svg>
+        </div>
+        <div style="flex:1;min-width:0;">
+          <div style="font-size:13.5px;font-weight:600;color:#8A9EB0;margin-bottom:2px;">Programme updated</div>
+          <div style="font-size:12.5px;color:#A8B8C4;line-height:1.5;">Paudie updated your exercises after your session on 11 June.</div>
+          <div style="font-size:11px;color:#C0CCD4;margin-top:5px;">1 week ago</div>
+        </div>
+      </div>
+
+    </div>
+  </div>`;
+}
+
+// ── ACCOUNT DETAILS ───────────────────────────────────────────────────────────
+
+function renderAccount() {
+  return `
+  <div style="padding:24px 16px 40px;animation:fadeIn .2s ease;">
+    <div style="margin-bottom:24px;">
+      <h1 style="font-size:21px;font-weight:700;color:#0C2D48;margin-bottom:4px;">Account Details</h1>
+      <p style="font-size:12.5px;color:#7A8C98;">Manage your personal information</p>
+    </div>
+
+    <!-- Avatar -->
+    <div style="display:flex;align-items:center;gap:16px;background:#fff;border-radius:16px;padding:20px;margin-bottom:16px;box-shadow:0 1px 3px rgba(12,45,72,.07);">
+      <div style="width:60px;height:60px;border-radius:50%;background:#1AAFC0;display:flex;align-items:center;justify-content:center;font-size:22px;font-weight:700;color:#fff;flex-shrink:0;">CM</div>
+      <div>
+        <div style="font-size:16px;font-weight:700;color:#0C2D48;">${h(state.acctName)}</div>
+        <div style="font-size:12.5px;color:#7A8C98;margin-top:2px;">Lower Back Rehab · Patient since May 2026</div>
+      </div>
+    </div>
+
+    <!-- Editable fields -->
+    <div style="background:#fff;border-radius:16px;padding:20px;margin-bottom:16px;box-shadow:0 1px 3px rgba(12,45,72,.07);">
+      <div style="font-size:11px;font-weight:700;color:#0C2D48;letter-spacing:.6px;text-transform:uppercase;margin-bottom:18px;">Personal Information</div>
+
+      <div style="margin-bottom:16px;">
+        <label style="display:block;font-size:12px;font-weight:600;color:#7A8C98;margin-bottom:6px;text-transform:uppercase;letter-spacing:.4px;">Full Name</label>
+        <input id="acct-name" type="text" value="${h(state.acctName)}" class="form-input"
+          style="width:100%;padding:11px 13px;border:1.5px solid #E0E8EC;border-radius:10px;font-size:15px;color:#0C2D48;background:#FAFCFD;">
+      </div>
+
+      <div style="margin-bottom:16px;">
+        <label style="display:block;font-size:12px;font-weight:600;color:#7A8C98;margin-bottom:6px;text-transform:uppercase;letter-spacing:.4px;">Email Address</label>
+        <input id="acct-email" type="email" value="${h(state.acctEmail)}" class="form-input"
+          style="width:100%;padding:11px 13px;border:1.5px solid #E0E8EC;border-radius:10px;font-size:15px;color:#0C2D48;background:#FAFCFD;">
+      </div>
+
+      <div>
+        <label style="display:block;font-size:12px;font-weight:600;color:#7A8C98;margin-bottom:6px;text-transform:uppercase;letter-spacing:.4px;">Phone Number</label>
+        <input id="acct-phone" type="tel" value="${h(state.acctPhone)}" class="form-input"
+          style="width:100%;padding:11px 13px;border:1.5px solid #E0E8EC;border-radius:10px;font-size:15px;color:#0C2D48;background:#FAFCFD;">
+      </div>
+    </div>
+
+    <!-- Read-only clinic info -->
+    <div style="background:#fff;border-radius:16px;padding:20px;margin-bottom:20px;box-shadow:0 1px 3px rgba(12,45,72,.07);">
+      <div style="font-size:11px;font-weight:700;color:#0C2D48;letter-spacing:.6px;text-transform:uppercase;margin-bottom:18px;">Clinic Information</div>
+
+      ${readOnlyField('Treating Physiotherapist', 'Paudie Ives')}
+      ${readOnlyField('Condition', 'Lower Back Rehab')}
+      ${readOnlyField('Programme Phase', 'Phase 1 — Active')}
+      ${readOnlyField('Patient Since', 'May 2026')}
+    </div>
+
+    <!-- Save / success -->
+    ${state.acctSaved ? `
+    <div style="display:flex;align-items:center;gap:9px;padding:14px 16px;background:#EDF7F9;border-radius:12px;margin-bottom:14px;animation:fadeIn .2s ease;">
+      ${SVG_CHECK_CIRCLE()}
+      <span style="font-size:14px;font-weight:600;color:#0C2D48;">Changes saved successfully.</span>
+    </div>` : ''}
+
+    <button id="btn-save-account" class="btn-sign-in"
+      style="width:100%;max-width:280px;padding:13px 24px;background:#1AAFC0;color:#fff;border:none;border-radius:10px;font-size:15px;font-weight:700;cursor:pointer;">
+      Save Changes
+    </button>
+  </div>`;
+}
+
+function readOnlyField(label, value) {
+  return `
+  <div style="display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid #F2F5F8;">
+    <span style="font-size:13px;color:#7A8C98;">${label}</span>
+    <span style="font-size:13px;font-weight:600;color:#0C2D48;">${value}</span>
+  </div>`;
+}
+
+// ── EVENT BINDING ─────────────────────────────────────────────────────────────
+
+function bind() {
+  // Login
+  const inpEmail = document.getElementById('inp-email');
+  const inpPw    = document.getElementById('inp-pw');
+  const btnLogin = document.getElementById('btn-login');
+
+  if (inpEmail) {
+    inpEmail.addEventListener('input', e => { state.email = e.target.value; state.loginError = false; });
+    inpEmail.focus();
+  }
+  if (inpPw) {
+    inpPw.addEventListener('input', e => { state.password = e.target.value; state.loginError = false; });
+    inpPw.addEventListener('keydown', e => { if (e.key === 'Enter') doLogin(); });
+  }
+  if (btnLogin) btnLogin.addEventListener('click', doLogin);
+
+  // Avatar / menu
+  const btnAvatar = document.getElementById('btn-avatar');
+  if (btnAvatar) {
+    btnAvatar.addEventListener('click', e => {
+      e.stopPropagation();
+      setState(s => ({ showMenu: !s.showMenu }));
+    });
+  }
+
+  // Close menu on outside click
+  if (state.showMenu) {
+    setTimeout(() => {
+      document.addEventListener('click', () => { if (state.showMenu) setState({ showMenu: false }); }, { once: true });
+    }, 0);
+  }
+
+  // Sign out (header dropdown + sidebar)
+  const doSignOut = () =>
+    setState({ view: 'login', email: '', password: '', loginError: false, showMenu: false });
+
+  const btnSignoutSidebar = document.getElementById('btn-signout-sidebar');
+  if (btnSignoutSidebar) btnSignoutSidebar.addEventListener('click', doSignOut);
+
+  const btnSignout = document.getElementById('btn-signout');
+  if (btnSignout) btnSignout.addEventListener('click', doSignOut);
+
+  const btnEditAccount = document.getElementById('btn-edit-account');
+  if (btnEditAccount) btnEditAccount.addEventListener('click', () =>
+    setState({ view: 'account', showMenu: false }));
+
+  const btnSaveAccount = document.getElementById('btn-save-account');
+  if (btnSaveAccount) btnSaveAccount.addEventListener('click', () => {
+    const name  = document.getElementById('acct-name')?.value  ?? state.acctName;
+    const email = document.getElementById('acct-email')?.value ?? state.acctEmail;
+    const phone = document.getElementById('acct-phone')?.value ?? state.acctPhone;
+    setState({ acctName: name, acctEmail: email, acctPhone: phone, acctSaved: true });
+  });
+
+  // Back
+  const btnBack = document.getElementById('btn-back');
+  if (btnBack) btnBack.addEventListener('click', () => setState({ view: 'exercises', showMenu: false }));
+
+  // Check-in
+  const btnEasy = document.getElementById('btn-easy');
+  const btnJR   = document.getElementById('btn-jr');
+  const btnHard = document.getElementById('btn-hard');
+  if (btnEasy) btnEasy.addEventListener('click', () => setState({ checkIn: { exerciseId: state.selectedId, value: 'easy' } }));
+  if (btnJR)   btnJR.addEventListener('click',   () => setState({ checkIn: { exerciseId: state.selectedId, value: 'just-right' } }));
+  if (btnHard) btnHard.addEventListener('click', () => setState({ checkIn: { exerciseId: state.selectedId, value: 'hard' } }));
+
+  // Request slot
+  const btnSlot = document.getElementById('btn-slot');
+  if (btnSlot) btnSlot.addEventListener('click', () => setState({ slotRequested: true }));
+
+  // Exercise cards
+  document.querySelectorAll('[data-exercise]').forEach(el =>
+    el.addEventListener('click', () =>
+      setState({ view: 'detail', selectedId: parseInt(el.dataset.exercise), checkIn: null, showMenu: false })));
+
+  // Nav tabs
+  document.querySelectorAll('[data-nav]').forEach(el =>
+    el.addEventListener('click', () =>
+      setState({ view: el.dataset.nav, showMenu: false })));
+}
+
+function doLogin() {
+  const { email, password } = state;
+  if (email.trim() && password.trim()) setState({ view: 'exercises', loginError: false });
+  else setState({ loginError: true });
+}
+
+// Kick off
+render();
+</script>
+</body>
+</html>
