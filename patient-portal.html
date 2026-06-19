@@ -8,7 +8,7 @@
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
     html, body { height: 100%; }
-    body { font-family: 'DM Sans', system-ui, sans-serif; background: #122840; -webkit-font-smoothing: antialiased; }
+    body { font-family: 'DM Sans', system-ui, sans-serif; background: #F5F8FA; -webkit-font-smoothing: antialiased; }
     input, button { font-family: inherit; }
 
     @keyframes fadeIn  { from { opacity: 0; transform: translateY(6px);  } to { opacity: 1; transform: translateY(0); } }
@@ -152,9 +152,10 @@
         height: 100vh;
       }
 
-      /* Hide mobile bottom nav and header logo on desktop */
+      /* Hide mobile elements on desktop */
       .bottom-nav { display: none !important; }
       .header-logo-group { display: none !important; }
+      .mobile-hamburger { display: none !important; }
 
       /* Show desktop page title and push avatar to the right */
       .header-desktop-title { display: flex !important; flex: 1; align-items: center; min-width: 0; }
@@ -256,6 +257,7 @@ let state = {
   checkIn: null,      // { exerciseId, value }
   slotRequested: false,
   showMenu: false,
+  showNav: false,
   // account details (editable)
   acctName: 'Ciarán Murphy',
   acctEmail: 'ciaran.murphy@email.com',
@@ -302,7 +304,7 @@ function render() {
 
 function renderLogin() {
   return `
-  <div style="min-height:100vh;display:flex;align-items:center;justify-content:center;padding:24px 16px;">
+  <div style="min-height:100vh;min-height:100dvh;background:#122840;display:flex;align-items:center;justify-content:center;padding:24px 16px;">
     <div style="max-width:390px;width:100%;background:#fff;border-radius:24px;box-shadow:0 20px 60px rgba(0,0,0,.28),0 4px 12px rgba(0,0,0,.12);padding:40px 32px;animation:slideUp .4s ease;">
 
       <div style="display:flex;flex-direction:column;align-items:center;margin-bottom:30px;">
@@ -361,7 +363,7 @@ function renderApp() {
   const pageTitle = { exercises:'Your Programme', detail:'Exercises', appointments:'Appointments', progress:'Progress', notifications:'Notifications', account:'Account Details' }[v] || '';
 
   return `
-  <div class="app-shell" style="max-width:600px;margin:0 auto;height:100vh;display:flex;flex-direction:column;background:#F5F8FA;">
+  <div class="app-shell" style="max-width:600px;margin:0 auto;height:100vh;height:100dvh;display:flex;flex-direction:column;background:#F5F8FA;">
 
     <!-- DESKTOP SIDEBAR (hidden on mobile via CSS) -->
     <aside class="desktop-sidebar">
@@ -400,6 +402,14 @@ function renderApp() {
 
         <!-- Logo group — visible on mobile, hidden on desktop -->
         <div class="header-logo-group" style="display:flex;align-items:center;gap:10px;flex:1;min-width:0;">
+          <!-- Hamburger — mobile only -->
+          <button id="btn-hamburger" class="mobile-hamburger"
+            style="width:36px;height:36px;background:none;border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;padding:0;color:#0C2D48;">
+            ${state.showNav
+              ? `<svg width="20" height="20" viewBox="0 0 20 20" fill="none"><path d="M4 4L16 16M16 4L4 16" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>`
+              : `<svg width="20" height="20" viewBox="0 0 20 20" fill="none"><path d="M3 5h14M3 10h14M3 15h14" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>`
+            }
+          </button>
           <div style="width:32px;height:32px;background:#EDF7F9;border-radius:8px;overflow:hidden;flex-shrink:0;display:flex;align-items:center;justify-content:center;">
             <img src="${LOGO}" class="logo-img" style="width:28px;height:28px;object-fit:contain;" alt="">
           </div>
@@ -422,6 +432,25 @@ function renderApp() {
           style="width:36px;height:36px;border-radius:50%;background:#1AAFC0;display:flex;align-items:center;justify-content:center;font-size:12.5px;font-weight:700;color:#fff;cursor:pointer;flex-shrink:0;letter-spacing:.3px;user-select:none;">
           CM
         </div>
+
+        ${state.showNav ? `
+        <div id="nav-overlay" style="position:fixed;inset:0;top:56px;z-index:90;display:flex;flex-direction:column;" class="mobile-hamburger">
+          <div style="background:rgba(12,45,72,.45);flex:1;" id="nav-overlay-bg"></div>
+          <div style="background:#fff;border-top:1px solid #E8EEF2;padding:8px 0 32px;animation:slideUp .18s ease;">
+            ${[
+              ['exercises',    NAV_EXERCISES,    'Exercises',    isEx],
+              ['appointments', NAV_APPOINTMENTS, 'Appointments', v==='appointments'],
+              ['progress',     NAV_PROGRESS,     'Progress',     v==='progress'],
+              ['notifications',NAV_BELL,         'Alerts',       v==='notifications'],
+            ].map(([view, icon, label, active]) => `
+            <button data-nav="${view}" class="ham-nav-item"
+              style="width:100%;display:flex;align-items:center;gap:14px;padding:15px 24px;background:none;border:none;cursor:pointer;text-align:left;border-left:3px solid ${active ? '#1AAFC0' : 'transparent'};">
+              <span style="color:${active ? '#1AAFC0' : '#7A8C98'};">${icon}</span>
+              <span style="font-size:16px;font-weight:${active ? '700' : '500'};color:${active ? '#0C2D48' : '#5A6C7A'};">${label}</span>
+              ${view === 'notifications' && !active ? `<span style="margin-left:auto;background:#1AAFC0;color:#fff;border-radius:10px;padding:1px 7px;font-size:11px;font-weight:700;">2</span>` : ''}
+            </button>`).join('')}
+          </div>
+        </div>` : ''}
 
         ${state.showMenu ? `
         <div style="position:absolute;top:60px;right:12px;background:#fff;border-radius:16px;box-shadow:0 8px 32px rgba(12,45,72,.16),0 2px 8px rgba(12,45,72,.08);border:1px solid #E8EEF2;z-index:100;min-width:220px;overflow:hidden;animation:dropIn .15s ease;">
@@ -452,8 +481,8 @@ function renderApp() {
         <div class="content-wrap">${content}</div>
       </main>
 
-      <!-- BOTTOM NAV (mobile only — hidden on desktop via CSS) -->
-      <nav class="bottom-nav" style="flex-shrink:0;height:64px;background:#fff;border-top:1px solid #E8EEF2;display:flex;align-items:stretch;">
+      <!-- BOTTOM NAV (hidden — replaced by hamburger on mobile, sidebar on desktop) -->
+      <nav class="bottom-nav" style="flex-shrink:0;height:64px;background:#fff;border-top:1px solid #E8EEF2;display:none;align-items:stretch;">
         ${navTab('exercises',     NAV_EXERCISES,    'Exercises',    isEx)}
         ${navTab('appointments',  NAV_APPOINTMENTS, 'Appointments', v === 'appointments')}
         ${navTab('progress',      NAV_PROGRESS,     'Progress',     v === 'progress')}
@@ -891,7 +920,7 @@ function bind() {
   if (btnAvatar) {
     btnAvatar.addEventListener('click', e => {
       e.stopPropagation();
-      setState(s => ({ showMenu: !s.showMenu }));
+      setState(s => ({ showMenu: !s.showMenu, showNav: false }));
     });
   }
 
@@ -945,10 +974,21 @@ function bind() {
     el.addEventListener('click', () =>
       setState({ view: 'detail', selectedId: parseInt(el.dataset.exercise), checkIn: null, showMenu: false })));
 
-  // Nav tabs
+  // Nav tabs (sidebar + hamburger menu)
   document.querySelectorAll('[data-nav]').forEach(el =>
     el.addEventListener('click', () =>
-      setState({ view: el.dataset.nav, showMenu: false })));
+      setState({ view: el.dataset.nav, showMenu: false, showNav: false })));
+
+  // Hamburger open/close
+  const btnHamburger = document.getElementById('btn-hamburger');
+  if (btnHamburger) btnHamburger.addEventListener('click', e => {
+    e.stopPropagation();
+    setState({ showNav: !state.showNav, showMenu: false });
+  });
+
+  // Tap backdrop to close hamburger nav
+  const navOverlayBg = document.getElementById('nav-overlay-bg');
+  if (navOverlayBg) navOverlayBg.addEventListener('click', () => setState({ showNav: false }));
 }
 
 function doLogin() {
